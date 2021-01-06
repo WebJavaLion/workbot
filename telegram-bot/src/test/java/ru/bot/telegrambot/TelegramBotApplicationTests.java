@@ -1,10 +1,10 @@
-package ru.bot.workbot;
+package ru.bot.telegrambot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WorkbotApplicationTests {
+class TelegramBotApplicationTests {
 
     @Test
     void contextLoads() {
