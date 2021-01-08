@@ -24,4 +24,122 @@
             ]]>
         </sql>
     </changeSet>
+    <changeSet id="2" author="lev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*) from information_schema.columns c
+                        where
+                            c.table_name = 'user_info' and c.column_name = 'telegram_id' and c.data_type = 'bigint';
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                alter table user_info alter column telegram_id type bigint;
+            ]]>
+        </sql>
+        <rollback>
+            <![CDATA[
+                alter table user_info alter column telegram_id type integer;
+            ]]>
+        </rollback>
+    </changeSet>
+    <changeSet id="3" author="lev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*)
+                    from information_schema.columns c
+                    where c.table_name = 'user_info'
+                      and c.column_name = 'experience'
+                       or c.column_name = 'city'
+                       or c.column_name = 'min_salary'
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            alter table user_info add column experience text;
+            alter table user_info add column min_salary integer;
+            alter table user_info add column city text;
+        </sql>
+    </changeSet>
+    <changeSet id="4" author="lev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*)
+                    from information_schema.table_constraints c
+                    where c.table_name = 'user_info'
+                      and c.constraint_type = 'PRIMARY KEY';
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                alter table user_info
+                    add primary key (id);
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="5" author="lev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*) from pg_type t
+                    where t.typname = 'user_state'
+                       or t.typname = 'registration_stage';
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                create type user_state as enum ('default', 'registration');
+                create type registration_stage as enum ('key_words_choice', 'experience_choice', 'min_salary_choice', 'city_choice');
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="6" author="lev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*)
+                    from information_schema.tables
+                    where table_name = 'session';
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                create table session
+                (
+                    id                  integer references user_info (id) primary key,
+                    state               user_state,
+                    is_fully_registered boolean,
+                    registration_stage  registration_stage
+                );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="7" author="lev">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*)
+                    from information_schema.tables
+                    where table_name = 'key_word';
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                create table key_word
+                (
+                    user_id  integer references user_info (id),
+                    key_word text,
+                    primary key (user_id, key_word)
+                );
+            ]]>
+        </sql>
+    </changeSet>
 </databaseChangeLog>
