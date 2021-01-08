@@ -10,6 +10,10 @@ import ru.bot.telegrambot.pojo.converter.Converter;
 
 import java.util.function.Consumer;
 
+/**
+ * @author Lshilov
+ */
+
 @Configuration
 public class SenderConfiguration {
 

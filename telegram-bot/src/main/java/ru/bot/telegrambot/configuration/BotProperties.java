@@ -4,6 +4,10 @@ import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
+/**
+ * @author Lshilov
+ */
+
 @ConstructorBinding
 @ConfigurationProperties(prefix = "bot")
 @Getter

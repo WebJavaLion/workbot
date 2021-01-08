@@ -10,6 +10,10 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.bot.telegrambot.configuration.BotProperties;
 import ru.bot.telegrambot.service.BotService;
 
+/**
+ * @author Lshilov
+ */
+
 @SpringBootApplication
 @EnableConfigurationProperties(BotProperties.class)
 public class TelegramBotApplication {

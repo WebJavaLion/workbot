@@ -5,6 +5,10 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.bot.telegrambot.configuration.BotProperties;
 
+/**
+ * @author Lshilov
+ */
+
 @Service
 public class BotService extends TelegramLongPollingBot {
 
