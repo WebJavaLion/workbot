@@ -31,12 +31,12 @@ public class UserInfoRepository {
                 .selectFrom(USER_INFO)
                 .where(USER_INFO.TELEGRAM_ID.eq(id))
                 .fetchOptional()
-                .map(r ->
+                .map(record ->
                     ExtendedUserInfo.builder()
-                            .userInfo(r.into(UserInfo.class))
-                            .session(Objects.requireNonNull(r.fetchChild(Keys.SESSION__SESSION_ID_FKEY))
+                            .userInfo(record.into(UserInfo.class))
+                            .session(Objects.requireNonNull(record.fetchChild(Keys.SESSION__SESSION_ID_FKEY))
                                     .into(Session.class))
-                            .keyWords(r.fetchChildren(Keys.KEY_WORD__KEY_WORD_USER_ID_FKEY)
+                            .keyWords(record.fetchChildren(Keys.KEY_WORD__KEY_WORD_USER_ID_FKEY)
                                     .into(KeyWord.class))
                             .build()
                 );

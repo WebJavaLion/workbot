@@ -9,4 +9,7 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 public interface Processor {
 
     void process(ExtendedMessageInfo message);
+    default String command() {
+        return "/start";
+    };
 }

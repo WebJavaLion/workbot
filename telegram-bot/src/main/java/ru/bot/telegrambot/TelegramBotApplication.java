@@ -18,7 +18,7 @@ import ru.bot.telegrambot.service.BotService;
 @EnableConfigurationProperties(BotProperties.class)
 public class TelegramBotApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchFieldException {
         ConfigurableApplicationContext context = SpringApplication.run(TelegramBotApplication.class, args);
         try {
             TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);

@@ -1,9 +1,6 @@
 package ru.bot.telegrambot.pojo;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -15,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class ExtendedMessageInfo {
 
     private ExtendedUserInfo extendedUserInfo;
