@@ -31,7 +31,5 @@ public class TelegramBotApplication {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-        Map<RegistrationStage, Processor> registrationProcessorMap = context.getBean(ProcessorExtractor.class).registrationProcessorMap;
-        registrationProcessorMap.values().forEach(v -> System.out.println(v.getClass()));
     }
 }

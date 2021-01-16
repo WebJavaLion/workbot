@@ -1,16 +1,19 @@
 package ru.bot.telegrambot.processor;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
+import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -18,6 +21,7 @@ import java.util.function.Consumer;
  */
 
 @Component
+@Transactional
 public class StartProcessor implements Processor{
 
     private final UserInfoRepository repository;
@@ -40,7 +44,14 @@ public class StartProcessor implements Processor{
                 .getUserName());
         userInfo.setCreatedDateTime(LocalDateTime.now());
         userInfo.setLastVisitDateTime(LocalDateTime.now());
-        repository.save(userInfo);
+
+        repository.save(userInfo)
+                .ifPresent(id -> {
+                    Session session = new Session();
+                    session.setId(id);
+                    session.setIsFullyRegistered(false);
+                    repository.save(session);
+                });
 
         sender.accept(SendMessage.builder()
                 .text(text)

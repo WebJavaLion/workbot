@@ -7,11 +7,17 @@ import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 import ru.bot.telegrambot.tables.pojos.KeyWord;
 import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
+import ru.bot.telegrambot.tables.records.KeyWordRecord;
+import ru.bot.telegrambot.tables.records.UserInfoRecord;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static ru.bot.telegrambot.tables.UserInfo.*;
+import static ru.bot.telegrambot.tables.Session.*;
+import static ru.bot.telegrambot.tables.KeyWord.*;
 
 /**
  * @author Lshilov
@@ -42,9 +48,43 @@ public class UserInfoRepository {
                 );
     }
 
-    public void save(UserInfo userInfo) {
-        context.insertInto(USER_INFO)
+    public Optional<Integer> save(UserInfo userInfo) {
+        return context.insertInto(USER_INFO)
                 .set(context.newRecord(USER_INFO, userInfo))
+                .returning()
+                .fetchOptional()
+                .map(UserInfoRecord::getId);
+    }
+
+    public void save(Session session) {
+        context.insertInto(SESSION)
+                .set(context.newRecord(SESSION, session))
                 .execute();
+    }
+
+    public void update(Session session) {
+        if (session.getId() != null) {
+            context.update(SESSION)
+                    .set(context.newRecord(SESSION, session))
+                    .execute();
+        }
+    }
+
+    public void save(List<KeyWord> keyWords) {
+        context.batchInsert(
+                keyWords
+                        .stream()
+                        .map(v -> context.newRecord(KEY_WORD, v))
+                        .collect(Collectors.toList()))
+                .execute();
+    }
+
+    public void update(UserInfo userInfo) {
+        if (userInfo.getId() != null) {
+            context.update(USER_INFO)
+                    .set(context.newRecord(USER_INFO, userInfo))
+                    .where(USER_INFO.ID.eq(userInfo.getId()))
+                    .execute();
+        }
     }
 }

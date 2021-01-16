@@ -16,13 +16,9 @@ public class DefaultSupplier implements StageSupplier {
     @RegistrationFlowSupplier
     public Map<Class<?>, RegistrationStage> processorMap;
 
-
     @Override
     public RegistrationStage getNextStageForClass(Class<?> cl) {
         return processorMap.get(cl);
     }
 
-    public Map<Class<?>, RegistrationStage> getProcessorMap() {
-        return processorMap;
-    }
 }
