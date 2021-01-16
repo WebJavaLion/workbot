@@ -10,6 +10,7 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.KeyWord;
 import ru.bot.telegrambot.tables.pojos.Session;
+import ru.bot.telegrambot.util.MessageUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -51,7 +52,7 @@ public class KeyWordsProcessor implements Processor {
         repository.update(session);
         sender.accept(
                 new SendMessage(message.getChatId().toString(),
-                        getMessage(nextStageForClass))
+                        MessageUtil.getMessageForStage(nextStageForClass))
         );
     }
 
@@ -65,23 +66,5 @@ public class KeyWordsProcessor implements Processor {
                 .map(String::trim)
                 .distinct()
                 .collect(Collectors.toList());
-    }
-
-    private String getMessage(RegistrationStage stage) {
-        return switch (stage) {
-            case city_choice -> "Напишите город, в котором вы проживаете";
-
-            case experience_choice -> """
-                    Напишите ваш текущий опыт в данной сфере в следующем формате:
-                    менее 6 месяцев, 1-3 года, более 3 лет                                            
-                    """;
-
-            case min_salary_choice -> """
-                    Введите минимальный желаемый уровень зарплаты в рублях. 
-                    Например: 100 тысяч, 100000, 100к
-                    """;
-
-            default -> throw new IllegalStateException("Unexpected value: " + stage);
-        };
     }
 }
