@@ -15,8 +15,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 @ToString
 public class ExtendedMessageInfo {
 
-    private ExtendedUserInfo extendedUserInfo;
+    private String text;
+    private Long chatId;
     private Message wrappedMessage;
     private MessageType messageType;
     private CallbackQuery callbackQuery;
+    private ExtendedUserInfo extendedUserInfo;
 }

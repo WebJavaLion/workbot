@@ -1,25 +1,38 @@
 package ru.bot.telegrambot.service;
 
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.bot.telegrambot.configuration.BotProperties;
+import ru.bot.telegrambot.context.ProcessorExtractorAware;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.pojo.converter.Converter;
+import ru.bot.telegrambot.processor.ProcessorExtractor;
 
 /**
  * @author Lshilov
  */
 
-@Service
-public class BotService extends TelegramLongPollingBot {
+public class BotService extends TelegramLongPollingBot implements ProcessorExtractorAware {
 
-    private final Converter<ExtendedMessageInfo, Update> converter;
     private final BotProperties botProperties;
+    private ProcessorExtractor processorExtractor;
+    private final Converter<ExtendedMessageInfo, Update> converter;
 
-    public BotService(Converter<ExtendedMessageInfo, Update> converter, BotProperties botProperties) {
+    public BotService(BotProperties botProperties,
+                      Converter<ExtendedMessageInfo, Update> converter) {
         this.converter = converter;
         this.botProperties = botProperties;
+    }
+
+
+    public void executeSendMessage(SendMessage sendMessage) {
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -35,6 +48,12 @@ public class BotService extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         ExtendedMessageInfo convert = converter.convert(update);
-        System.out.println(convert);
+        processorExtractor.getAppropriateProcessor(convert)
+                .ifPresent(processor -> processor.process(convert));
+    }
+
+    @Override
+    public void setExtractor(ProcessorExtractor extractor) {
+        this.processorExtractor = extractor;
     }
 }

@@ -1,6 +1,7 @@
 package ru.bot.telegrambot.processor;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.bot.telegrambot.context.RegistrationFlow;
 import ru.bot.telegrambot.enums.RegistrationStage;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
@@ -10,6 +11,7 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
  */
 
 @Component
+@Transactional
 @RegistrationFlow(order = 3, stage = RegistrationStage.min_salary_choice)
 public class SalaryProcessor implements Processor {
 
@@ -22,5 +24,10 @@ public class SalaryProcessor implements Processor {
     @Override
     public void process(ExtendedMessageInfo message) {
         stageSupplier.getNextStageForClass(SalaryProcessor.class);
+    }
+
+    @Override
+    public String command() {
+        return "/salary";
     }
 }

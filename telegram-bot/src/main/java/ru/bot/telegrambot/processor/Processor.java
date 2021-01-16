@@ -10,6 +10,6 @@ public interface Processor {
 
     void process(ExtendedMessageInfo message);
     default String command() {
-        return "/start";
-    };
+        return "";
+    }
 }

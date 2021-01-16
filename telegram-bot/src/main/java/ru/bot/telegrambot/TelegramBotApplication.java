@@ -8,7 +8,12 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.bot.telegrambot.configuration.BotProperties;
+import ru.bot.telegrambot.enums.RegistrationStage;
+import ru.bot.telegrambot.processor.Processor;
+import ru.bot.telegrambot.processor.ProcessorExtractor;
 import ru.bot.telegrambot.service.BotService;
+
+import java.util.Map;
 
 /**
  * @author Lshilov
@@ -26,5 +31,7 @@ public class TelegramBotApplication {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        Map<RegistrationStage, Processor> registrationProcessorMap = context.getBean(ProcessorExtractor.class).registrationProcessorMap;
+        registrationProcessorMap.values().forEach(v -> System.out.println(v.getClass()));
     }
 }

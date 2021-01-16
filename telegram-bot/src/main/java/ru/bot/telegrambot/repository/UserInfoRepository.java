@@ -41,4 +41,10 @@ public class UserInfoRepository {
                             .build()
                 );
     }
+
+    public void save(UserInfo userInfo) {
+        context.insertInto(USER_INFO)
+                .set(context.newRecord(USER_INFO, userInfo))
+                .execute();
+    }
 }

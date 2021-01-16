@@ -30,6 +30,12 @@ public class ExtendedMessageInfoConverter implements Converter<ExtendedMessageIn
         } else if (messageInfo.getCallbackQuery() != null) {
             messageInfo.setMessageType(MessageType.CALLBACK);
         }
+        messageInfo.setChatId(getChatId(ob));
+
+        messageInfo.setText(
+                messageInfo.getWrappedMessage() != null ?
+                        messageInfo.getWrappedMessage().getText() : messageInfo.getCallbackQuery().getData());
+
         userRepository
                 .findByTelegramId(
                         messageInfo.getWrappedMessage() != null ?
@@ -42,5 +48,14 @@ public class ExtendedMessageInfoConverter implements Converter<ExtendedMessageIn
                 .ifPresent(messageInfo::setExtendedUserInfo);
 
         return messageInfo;
+    }
+
+    private Long getChatId(Update update) {
+       return update.getMessage() != null ?
+        update.getMessage().getChatId() :
+        update.getCallbackQuery()
+                .getFrom()
+                .getId()
+                .longValue();
     }
 }

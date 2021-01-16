@@ -1,6 +1,9 @@
 package ru.bot.telegrambot.context;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -45,6 +48,7 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
                     if (stageMapAnnotation != null && isValidFieldForBeanMap(field)) {
                         ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                         Class<?> clazz = (Class<?>) genericType.getActualTypeArguments()[1];
+
                         Set<Class<?>> collect = stageMapBeans.keySet()
                                 .stream()
                                 .filter(clazz::isAssignableFrom)
@@ -64,8 +68,7 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
                             setValue(field, bean, newMap);
                             supplierStageMap.put(
                                     bean, Lists.newArrayList(
-                                            new AbstractMap.SimpleEntry<>(clazz, field))
-                            );
+                                            new AbstractMap.SimpleEntry<>(clazz, field)));
                         }
                     }
                 });
@@ -81,26 +84,26 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
                     .collect(Collectors.toSet());
             if (!collect.isEmpty()) {
                 Map<RegistrationStage, Object> newMap = new HashMap<>();
-                for (Class<?> aClass : collect) {
-                    Map<RegistrationStage, Object> m = stageMapBeans.get(aClass);
+                collect.stream().map(stageMapBeans::get).forEach(m -> {
                     m.put(stage, bean);
                     newMap.putAll(m);
-                }
-                supplierStageMap.forEach((key, value) -> value
-                        .stream()
-                        .filter(e -> e.getKey()
-                                .isAssignableFrom(bean.getClass()))
-                        .findAny()
-                        .ifPresent(e -> setValue(e.getValue(), key, newMap)));
+                });
+                supplierStageMap
+                        .forEach((key, value) -> value.stream()
+                                .filter(e -> e.getKey()
+                                        .isAssignableFrom(bean.getClass()))
+                                .findAny()
+                                .ifPresent(e -> setValue(e.getValue(), key, newMap)));
             } else {
                 stageMapBeans.put(bean.getClass(), new HashMap<>(Map.of(stage, bean)));
             }
 
+            stageFlowMap.putIfAbsent(bean.getClass(), stage);
             tmpMap.put(order, new AbstractMap.SimpleEntry<>(bean.getClass(), stage));
             if (tmpMap.get(order + 1) != null) {
                 stageFlowMap.put(bean.getClass(), tmpMap.get(order + 1).getValue());
                 supplierFieldsFlow.forEach((k, v) ->
-                        v.forEach(f -> setValue(f, k, stageFlowMap)));
+                        v.forEach(f -> setValue(f, k, ImmutableMap.copyOf(stageFlowMap))));
             }
             if (tmpMap.get(order - 1) != null) {
                 int counter = order;
@@ -110,15 +113,44 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
                     stageFlowMap.put(currentStage.getKey(), nextStage.getValue());
                 }
                 supplierFieldsFlow.forEach((k, v)
-                        -> v.forEach(f -> setValue(f, k, stageFlowMap)));
+                        -> v.forEach(f -> setValue(f, k, ImmutableMap.copyOf(stageFlowMap))));
             }
-            stageFlowMap.putIfAbsent(bean.getClass(), stage);
+        }
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (AopUtils.isAopProxy(bean)) {
+            Object target = AopProxyUtils.getSingletonTarget(bean);
+            if (target != null) {
+                Set<Class<?>> collect = stageMapBeans.keySet()
+                        .stream()
+                        .filter(cl -> cl.isAssignableFrom(bean.getClass()))
+                        .collect(Collectors.toSet());
+                for (Class<?> aClass : collect) {
+                    Map<RegistrationStage, Object> registrationStageObjectMap = stageMapBeans.get(aClass);
+                    registrationStageObjectMap.forEach((k, v) -> {
+                        if (target.equals(v)) {
+                            registrationStageObjectMap.put(k, bean);
+                            Map<RegistrationStage, Object> newMap = Map.copyOf(registrationStageObjectMap);
+                            supplierStageMap
+                                    .forEach((key, value) -> value.stream()
+                                            .filter(e -> e.getKey()
+                                                    .isAssignableFrom(target.getClass()))
+                                            .findAny()
+                                            .ifPresent(e -> setValue(e.getValue(), key, newMap)));
+                        }
+                    });
+                }
+            }
         }
         return bean;
     }
 
     private void setValue(Field field, Object obj, Object value) {
         try {
+            field.setAccessible(true);
             field.set(obj, value);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
