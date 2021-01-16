@@ -66,6 +66,7 @@ public class UserInfoRepository {
         if (session.getId() != null) {
             context.update(SESSION)
                     .set(context.newRecord(SESSION, session))
+                    .where(SESSION.ID.eq(session.getId()))
                     .execute();
         }
     }
