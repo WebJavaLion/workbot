@@ -15,6 +15,7 @@ import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
 import ru.bot.telegrambot.util.MessageUtil;
 
+import javax.annotation.PostConstruct;
 import java.util.function.Consumer;
 
 /**
@@ -39,7 +40,12 @@ public class SalaryProcessor implements Processor {
 
     @Override
     public void process(ExtendedMessageInfo message) {
-        RegistrationStage stage = stageSupplier.getNextStageForClass(SalaryProcessor.class);
+        RegistrationStage stage = stageSupplier
+                .getNextStageForClassConsideringMissedStages(
+                        SalaryProcessor.class,
+                        message.getExtendedUserInfo()
+                );
+
         Integer salary = parseTextToSalary(message.getText());
         if (salary != null) {
             ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();

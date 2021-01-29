@@ -1,6 +1,5 @@
 package ru.bot.telegrambot.processor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -10,6 +9,7 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.KeyWord;
 import ru.bot.telegrambot.tables.pojos.Session;
+import ru.bot.telegrambot.tables.pojos.UserInfo;
 import ru.bot.telegrambot.util.MessageUtil;
 
 import java.util.Arrays;
@@ -40,7 +40,13 @@ public class KeyWordsProcessor implements Processor {
     public void process(ExtendedMessageInfo message) {
         List<String> words = parseWords(message.getText());
         Session session = message.getExtendedUserInfo().getSession();
-        RegistrationStage nextStageForClass = stageSupplier.getNextStageForClass(KeyWordsProcessor.class);
+
+        RegistrationStage nextStageForClass = stageSupplier
+                .getNextStageForClassConsideringMissedStages(
+                        KeyWordsProcessor.class,
+                        message.getExtendedUserInfo()
+                );
+
         session.setRegistrationStage(nextStageForClass);
         repository.save(words.stream()
                 .map(word -> new KeyWord(message
