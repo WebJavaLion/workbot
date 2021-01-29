@@ -8,7 +8,12 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.bot.telegrambot.configuration.BotProperties;
+import ru.bot.telegrambot.enums.RegistrationStage;
+import ru.bot.telegrambot.processor.Processor;
+import ru.bot.telegrambot.processor.ProcessorExtractor;
 import ru.bot.telegrambot.service.BotService;
+
+import java.util.Map;
 
 /**
  * @author Lshilov
@@ -18,7 +23,7 @@ import ru.bot.telegrambot.service.BotService;
 @EnableConfigurationProperties(BotProperties.class)
 public class TelegramBotApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchFieldException {
         ConfigurableApplicationContext context = SpringApplication.run(TelegramBotApplication.class, args);
         try {
             TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);

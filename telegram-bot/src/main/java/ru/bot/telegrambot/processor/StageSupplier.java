@@ -1,7 +1,6 @@
 package ru.bot.telegrambot.processor;
 
 import ru.bot.telegrambot.enums.RegistrationStage;
-import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 
 /**
  * @author Lshilov
@@ -10,5 +9,4 @@ import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 public interface StageSupplier {
 
     RegistrationStage getNextStageForClass(Class<?> cl);
-    RegistrationStage getNextStageForClassConsideringMissedStages(Class<?> cl, ExtendedUserInfo userInfo);
 }
