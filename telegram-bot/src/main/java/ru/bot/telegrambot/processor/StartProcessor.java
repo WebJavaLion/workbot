@@ -4,16 +4,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
+import ru.bot.telegrambot.util.KeyboardUtil;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -45,6 +42,11 @@ public class StartProcessor implements Processor{
         userInfo.setCreatedDateTime(LocalDateTime.now());
         userInfo.setLastVisitDateTime(LocalDateTime.now());
 
+        String text = message.getText();
+        userInfo.setComeFrom(
+                text.indexOf(' ') != -1 ?
+                        text.substring(text.indexOf(' ')) : null);
+
         repository.save(userInfo)
                 .ifPresent(id -> {
                     Session session = new Session();
@@ -54,7 +56,7 @@ public class StartProcessor implements Processor{
                 });
 
         sender.accept(SendMessage.builder()
-                .text(text)
+                .text(this.text)
                 .replyMarkup(getKeyboard())
                 .chatId(message.getChatId().toString())
                 .build());
@@ -66,11 +68,6 @@ public class StartProcessor implements Processor{
     }
 
     private ReplyKeyboardMarkup getKeyboard() {
-        KeyboardButton button = new KeyboardButton("регистрация");
-        KeyboardRow keyboardButtons = new KeyboardRow();
-        keyboardButtons.add(button);
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(List.of(keyboardButtons));
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        return replyKeyboardMarkup;
+        return KeyboardUtil.getDefaultKeyboardWithRegistrationButton();
     }
 }

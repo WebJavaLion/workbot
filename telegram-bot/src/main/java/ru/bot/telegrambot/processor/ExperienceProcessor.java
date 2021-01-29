@@ -1,5 +1,6 @@
 package ru.bot.telegrambot.processor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,6 +13,10 @@ import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
 import ru.bot.telegrambot.util.MessageUtil;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -27,12 +32,20 @@ public class ExperienceProcessor implements Processor {
     private final StageSupplier stageSupplier;
     private final Consumer<SendMessage> sender;
 
+    final Map<Integer, RegistrationStage> map;
+
     public ExperienceProcessor(UserInfoRepository repository,
                                StageSupplier stageSupplier,
-                               Consumer<SendMessage> sender) {
+                               Consumer<SendMessage> sender, Map<Integer, RegistrationStage> map) {
         this.repository = repository;
         this.stageSupplier = stageSupplier;
         this.sender = sender;
+        this.map = map;
+    }
+
+    @PostConstruct
+    void init() {
+        System.out.println(map);
     }
 
     @Override
@@ -40,7 +53,12 @@ public class ExperienceProcessor implements Processor {
         String s = message.getText().toLowerCase().trim();
         String convert = convert(s);
         if (!"".equals(convert)) {
-            RegistrationStage nextStageForClass = stageSupplier.getNextStageForClass(ExperienceProcessor.class);
+            RegistrationStage nextStageForClass = stageSupplier
+                    .getNextStageForClassConsideringMissedStages(
+                            ExperienceProcessor.class,
+                            message.getExtendedUserInfo()
+                    );
+
             ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();
             Session session = extendedUserInfo.getSession();
             session.setRegistrationStage(nextStageForClass);
