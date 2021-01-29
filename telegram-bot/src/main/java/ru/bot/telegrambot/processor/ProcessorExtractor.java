@@ -10,6 +10,7 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 import ru.bot.telegrambot.tables.pojos.Session;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,7 +46,7 @@ public class ProcessorExtractor {
             Session session = extendedUserInfo.getSession();
             UserState state = session.getState();
 
-            if (UserState.registration.equals(state) && !"/stop".equals(messageInfo.getText())) {
+            if (UserState.registration.equals(state)) {
                 RegistrationStage registrationStage = session.getRegistrationStage();
                 processorOptional = Optional.ofNullable(registrationProcessorMap.get(registrationStage));
             } else {

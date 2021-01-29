@@ -142,38 +142,4 @@
             ]]>
         </sql>
     </changeSet>
-    <changeSet id="8" author="lev">
-        <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="0">
-                <![CDATA[
-                select count(*)
-                from information_schema.columns c
-                where c.table_name = 'user_info'
-                  and c.column_name = 'come_from'
-                ]]>
-            </sqlCheck>
-        </preConditions>
-        <sql>
-            <![CDATA[
-                alter table user_info add column come_from text;
-            ]]>
-        </sql>
-    </changeSet>
-    <changeSet id="9" author="lev">
-        <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="0">
-                <![CDATA[
-                    select count(*)
-                    from information_schema.columns c
-                    where c.table_name = 'session'
-                      and c.column_name = 'missed';
-                ]]>
-            </sqlCheck>
-        </preConditions>
-        <sql>
-            <![CDATA[
-                alter table session add column missed registration_stage[];
-            ]]>
-        </sql>
-    </changeSet>
 </databaseChangeLog>

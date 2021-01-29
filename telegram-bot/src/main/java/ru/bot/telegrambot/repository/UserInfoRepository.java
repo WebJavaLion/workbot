@@ -7,6 +7,7 @@ import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 import ru.bot.telegrambot.tables.pojos.KeyWord;
 import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
+import ru.bot.telegrambot.tables.records.KeyWordRecord;
 import ru.bot.telegrambot.tables.records.UserInfoRecord;
 
 import java.util.List;
@@ -14,9 +15,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static ru.bot.telegrambot.tables.KeyWord.KEY_WORD;
-import static ru.bot.telegrambot.tables.Session.SESSION;
-import static ru.bot.telegrambot.tables.UserInfo.USER_INFO;
+import static ru.bot.telegrambot.tables.UserInfo.*;
+import static ru.bot.telegrambot.tables.Session.*;
+import static ru.bot.telegrambot.tables.KeyWord.*;
 
 /**
  * @author Lshilov

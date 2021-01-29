@@ -5,15 +5,11 @@ import com.google.common.collect.Lists;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import ru.bot.telegrambot.enums.RegistrationStage;
 
-import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -33,16 +29,7 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
     private final Map<Integer, Map.Entry<Class<?>, RegistrationStage>> tmpMap = new HashMap<>();
     private final Map<Object, List<Map.Entry<Class<?>, Field>>> supplierStageMap = new HashMap<>();
 
-    @Autowired
-    ConfigurableApplicationContext context;
-
-    @PostConstruct
-    void init() {
-        Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(RegistrationFlow.class);
-    }
-
     // Вроде работает, но надо тестить в разных ситуациях, можно было бы просто захардкодить, но так красивее. Потом дорефакторю именования и кодстайл.
-    //TODO: переписать, заинжектив контекст, и взять нужные бины в постконстракте, а не обновлять кучу мап и постоянно ресетить их в бины
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         Arrays.stream(bean.getClass().getDeclaredFields())

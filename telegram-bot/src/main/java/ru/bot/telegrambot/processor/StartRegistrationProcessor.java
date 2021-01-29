@@ -7,7 +7,6 @@ import ru.bot.telegrambot.enums.UserState;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.Session;
-import ru.bot.telegrambot.util.KeyboardUtil;
 
 import java.util.function.Consumer;
 
@@ -32,18 +31,9 @@ public class StartRegistrationProcessor implements Processor {
         session.setState(UserState.registration);
         session.setRegistrationStage(RegistrationStage.key_words_choice);
         repository.update(session);
-        SendMessage sm = new SendMessage();
-        sm.setChatId(message.getChatId().toString());
-        sm.setText(
-                "Чтобы приостановить регистрацию нажмите \"/stop\", " +
-                "чтобы пропустить шаг регистрации нажмите \"/skip\""
-        );
-        sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithCancelButton());
-        sender.accept(sm);
         sender.accept(new SendMessage(message.getChatId().toString(),
                 "Введите ключевые слова по которым для Вас будут подбираться вакансии. " +
-                        "Например: java, spring, kotlin, php, javascript")
-        );
+                        "Например: java, spring, kotlin, php, javascript"));
     }
 
     @Override
