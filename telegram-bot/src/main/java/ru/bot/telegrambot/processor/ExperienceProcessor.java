@@ -32,20 +32,12 @@ public class ExperienceProcessor implements Processor {
     private final StageSupplier stageSupplier;
     private final Consumer<SendMessage> sender;
 
-    final Map<Integer, RegistrationStage> map;
-
     public ExperienceProcessor(UserInfoRepository repository,
                                StageSupplier stageSupplier,
-                               Consumer<SendMessage> sender, Map<Integer, RegistrationStage> map) {
+                               Consumer<SendMessage> sender) {
         this.repository = repository;
         this.stageSupplier = stageSupplier;
         this.sender = sender;
-        this.map = map;
-    }
-
-    @PostConstruct
-    void init() {
-        System.out.println(map);
     }
 
     @Override

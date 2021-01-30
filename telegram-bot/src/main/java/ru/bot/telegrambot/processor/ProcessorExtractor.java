@@ -10,6 +10,7 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 import ru.bot.telegrambot.tables.pojos.Session;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +28,11 @@ public class ProcessorExtractor {
     public Map<RegistrationStage, Processor> registrationProcessorMap;
 
     private final Map<String, Processor> processorMap;
+
+    @PostConstruct
+    void init() {
+        System.out.println(444);
+    }
 
     public ProcessorExtractor(@Autowired List<Processor> processors) {
         processorMap = ImmutableMap

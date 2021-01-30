@@ -9,7 +9,6 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.KeyWord;
 import ru.bot.telegrambot.tables.pojos.Session;
-import ru.bot.telegrambot.tables.pojos.UserInfo;
 import ru.bot.telegrambot.util.MessageUtil;
 
 import java.util.Arrays;

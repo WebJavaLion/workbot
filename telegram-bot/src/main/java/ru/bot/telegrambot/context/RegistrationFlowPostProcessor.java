@@ -1,13 +1,12 @@
 package ru.bot.telegrambot.context;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
@@ -18,31 +17,75 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Lshilov
  */
 
 @Component
-public class RegistrationFlowPostProcessor implements BeanPostProcessor {
+public class RegistrationFlowPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 
-    private final Map<Object, List<Field>> supplierFieldsFlow = new HashMap<>();
-    private final Map<Class<?>, RegistrationStage> stageFlowMap = new HashMap<>();
-    private final Map<Class<?>, Map<RegistrationStage, Object>> stageMapBeans = new HashMap<>();
-    private final Map<Integer, Map.Entry<Class<?>, RegistrationStage>> tmpMap = new HashMap<>();
-    private final Map<Object, List<Map.Entry<Class<?>, Field>>> supplierStageMap = new HashMap<>();
+    private int flowCounts;
+    private int flowCounter;
+    private int stageMapCounts;
+    private int stageCounter;
+    private boolean isInvoked;
 
-    @Autowired
-    ConfigurableApplicationContext context;
+    private ConfigurableApplicationContext context;
+
+    private Map<Class<?>, RegistrationStage> stageFlowMap;
+    private final Map<String, Object> registrationStageMapClients = new HashMap<>();
+    private final Map<Class<?>, List<Map.Entry<Object, List<Field>>>> target = new HashMap<>();
+    private final Map<String, Map.Entry<RegistrationStage, Object>> registrationStageMapBeans = new HashMap<>();
 
     @PostConstruct
-    void init() {
-        Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(RegistrationFlow.class);
+    private void init() {
+        String[] registrationFlowAnnotations = context.getBeanNamesForAnnotation(RegistrationFlow.class);
+        String[] definitionNames = context.getBeanDefinitionNames();
+        for (String name : definitionNames) {
+            BeanDefinition beanDefinition = context.getBeanFactory().getBeanDefinition(name);
+            String beanClassName = beanDefinition.getBeanClassName();
+            if (beanClassName != null) {
+                try {
+                    Class<?> aClass = Class.forName(beanClassName);
+                    for (Field declaredField : aClass.getDeclaredFields()) {
+                        if (declaredField.getAnnotation(RegistrationStageMap.class) != null) {
+                            stageMapCounts++;
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        Map<Integer, AbstractMap.SimpleEntry<Class<?>, RegistrationStage>> map = new HashMap<>();
+        Arrays.stream(registrationFlowAnnotations)
+                .forEach(name -> {
+                    Class<?> type = context.getType(name);
+                    if (type != null) {
+                        RegistrationFlow annotation = AnnotationUtils
+                                .findAnnotation(type, RegistrationFlow.class);
+                        if (annotation != null) {
+                            map.put(annotation.order(),
+                                    new AbstractMap.SimpleEntry<>(type, annotation.stage())
+                            );
+                        }
+                    }
+                });
+        Map<Class<?>, RegistrationStage> stageMap = new HashMap<>();
+        map.keySet()
+                .forEach(k -> {
+                    AbstractMap.SimpleEntry<Class<?>, RegistrationStage> current = map.get(k);
+                    AbstractMap.SimpleEntry<Class<?>, RegistrationStage> next = map.get(k + 1);
+                    stageMap.put(
+                            current.getKey(),
+                            Objects.requireNonNullElse(next, current).getValue()
+                    );
+                });
+        stageFlowMap = ImmutableMap.copyOf(stageMap);
+        flowCounts = registrationFlowAnnotations.length;
     }
 
-    // Вроде работает, но надо тестить в разных ситуациях, можно было бы просто захардкодить, но так красивее. Потом дорефакторю именования и кодстайл.
-    //TODO: переписать, заинжектив контекст, и взять нужные бины в постконстракте, а не обновлять кучу мап и постоянно ресетить их в бины
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         Arrays.stream(bean.getClass().getDeclaredFields())
@@ -50,112 +93,73 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
                     RegistrationFlowSupplier stageFlowSupplierAnnotation =
                             field.getAnnotation(RegistrationFlowSupplier.class);
                     if (stageFlowSupplierAnnotation != null && isValidFieldForStageMap(field)) {
-                        if (!supplierFieldsFlow.containsKey(bean)) {
-                            supplierFieldsFlow.put(bean, new ArrayList<>());
-                        }
-                        supplierFieldsFlow.get(bean).add(field);
                         setValue(field, bean, stageFlowMap);
                     }
 
                     RegistrationStageMap stageMapAnnotation = field.getAnnotation(RegistrationStageMap.class);
                     if (stageMapAnnotation != null && isValidFieldForBeanMap(field)) {
+                        registrationStageMapClients.put(beanName, bean);
                         ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                         Class<?> clazz = (Class<?>) genericType.getActualTypeArguments()[1];
-
-                        Set<Class<?>> collect = stageMapBeans.keySet()
-                                .stream()
-                                .filter(clazz::isAssignableFrom)
-                                .collect(Collectors.toSet());
-
-                        if (collect.isEmpty()) {
-                            supplierStageMap.put(
-                                    bean, Lists.newArrayList
-                                            (new AbstractMap.SimpleEntry<>(clazz, field)));
-                            stageMapBeans.put(clazz, new HashMap<>());
+                        List<Map.Entry<Object, List<Field>>> maps = target.get(clazz);
+                        if (maps != null) {
+                            maps.stream()
+                                    .filter(e -> bean.equals(e.getKey()))
+                                    .findAny()
+                                    .ifPresent(e -> e.getValue().add(field));
                         } else {
-                            Map<RegistrationStage, Object> newMap = new HashMap<>();
-                            for (Class<?> aClass : collect) {
-                                Map<RegistrationStage, Object> registrationStageObjectMap = stageMapBeans.get(aClass);
-                                newMap.putAll(registrationStageObjectMap);
-                            }
-                            setValue(field, bean, newMap);
-                            supplierStageMap.put(
-                                    bean, Lists.newArrayList(
-                                            new AbstractMap.SimpleEntry<>(clazz, field)));
+                            List<Map.Entry<Object, List<Field>>> newEntryList = new ArrayList<>();
+                            newEntryList.add(new AbstractMap.SimpleEntry<>(bean, List.of(field)));
+                            target.put(clazz, newEntryList);
                         }
+                        stageCounter++;
                     }
                 });
 
         RegistrationFlow annotation = AnnotationUtils.findAnnotation(bean.getClass(), RegistrationFlow.class);
         if (annotation != null) {
-            int order = annotation.order();
             RegistrationStage stage = annotation.stage();
-
-            Set<Class<?>> collect = stageMapBeans.keySet()
-                    .stream()
-                    .filter(cl -> cl.isAssignableFrom(bean.getClass()))
-                    .collect(Collectors.toSet());
-            if (!collect.isEmpty()) {
-                Map<RegistrationStage, Object> newMap = new HashMap<>();
-                collect.stream().map(stageMapBeans::get).forEach(m -> {
-                    m.put(stage, bean);
-                    newMap.putAll(m);
-                });
-                supplierStageMap
-                        .forEach((key, value) -> value.stream()
-                                .filter(e -> e.getKey()
-                                        .isAssignableFrom(bean.getClass()))
-                                .findAny()
-                                .ifPresent(e -> setValue(e.getValue(), key, newMap)));
-            } else {
-                stageMapBeans.put(bean.getClass(), new HashMap<>(Map.of(stage, bean)));
-            }
-
-            stageFlowMap.putIfAbsent(bean.getClass(), stage);
-            tmpMap.put(order, new AbstractMap.SimpleEntry<>(bean.getClass(), stage));
-            if (tmpMap.get(order + 1) != null) {
-                stageFlowMap.put(bean.getClass(), tmpMap.get(order + 1).getValue());
-                supplierFieldsFlow.forEach((k, v) ->
-                        v.forEach(f -> setValue(f, k, ImmutableMap.copyOf(stageFlowMap))));
-            }
-            if (tmpMap.get(order - 1) != null) {
-                int counter = order;
-                while (tmpMap.get(--counter) != null) {
-                    Map.Entry<Class<?>, RegistrationStage> currentStage = tmpMap.get(counter);
-                    Map.Entry<Class<?>, RegistrationStage> nextStage = tmpMap.get(counter + 1);
-                    stageFlowMap.put(currentStage.getKey(), nextStage.getValue());
-                }
-                supplierFieldsFlow.forEach((k, v)
-                        -> v.forEach(f -> setValue(f, k, ImmutableMap.copyOf(stageFlowMap))));
-            }
+            registrationStageMapBeans.put(
+                    beanName,
+                    new AbstractMap.SimpleEntry<>(stage, bean)
+            );
         }
         return bean;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (AopUtils.isAopProxy(bean)) {
-            Object target = AopProxyUtils.getSingletonTarget(bean);
-            if (target != null) {
-                Set<Class<?>> collect = stageMapBeans.keySet()
-                        .stream()
-                        .filter(cl -> cl.isAssignableFrom(bean.getClass()))
-                        .collect(Collectors.toSet());
-                for (Class<?> aClass : collect) {
-                    Map<RegistrationStage, Object> registrationStageObjectMap = stageMapBeans.get(aClass);
-                    registrationStageObjectMap.forEach((k, v) -> {
-                        if (target.equals(v)) {
-                            registrationStageObjectMap.put(k, bean);
-                            Map<RegistrationStage, Object> newMap = Map.copyOf(registrationStageObjectMap);
-                            supplierStageMap
-                                    .forEach((key, value) -> value.stream()
-                                            .filter(e -> e.getKey()
-                                                    .isAssignableFrom(target.getClass()))
-                                            .findAny()
-                                            .ifPresent(e -> setValue(e.getValue(), key, newMap)));
-                        }
-                    });
-                }
+
+        if (registrationStageMapBeans.containsKey(beanName) || registrationStageMapClients.containsKey(beanName)) {
+            if (AopUtils.isAopProxy(bean)) {
+                registrationStageMapBeans.get(beanName).setValue(bean);
+            }
+            if (registrationStageMapBeans.containsKey(beanName)) {
+                flowCounter++;
+            }
+            if (flowCounter == flowCounts && !isInvoked && stageCounter == stageMapCounts) {
+                target.forEach((k, v) -> {
+                    Map.Entry<RegistrationStage, Object>[] entries =
+                            registrationStageMapBeans.values()
+                                    .stream()
+                                    .filter(e -> k.isAssignableFrom(e.getValue().getClass()))
+                                    .toArray(Map.Entry[]::new);
+
+                    Map<RegistrationStage, Object> registrationStageObjectMap =
+                            ImmutableMap.copyOf(
+                                    Map.ofEntries(entries)
+                            );
+                    v.forEach(entry ->
+                            entry.getValue()
+                                    .forEach(field ->
+                                            setValue(field,
+                                                    entry.getKey(),
+                                                    registrationStageObjectMap)
+                                    )
+                    );
+                });
+                isInvoked = true;
             }
         }
         return bean;
@@ -188,5 +192,10 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor {
             return RegistrationStage.class.isAssignableFrom((Class<?>) actualTypeArguments[0]);
         }
         return false;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context = (ConfigurableApplicationContext) applicationContext;
     }
 }

@@ -48,6 +48,6 @@ public class StartRegistrationProcessor implements Processor {
 
     @Override
     public String command() {
-        return "регистрация";
+        return "Регистрация";
     }
 }

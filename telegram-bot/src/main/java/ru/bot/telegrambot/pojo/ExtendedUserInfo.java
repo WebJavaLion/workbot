@@ -1,5 +1,6 @@
 package ru.bot.telegrambot.pojo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import ru.bot.telegrambot.tables.pojos.KeyWord;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 
 @Data
+@AllArgsConstructor
 @Builder
 public class ExtendedUserInfo {
 

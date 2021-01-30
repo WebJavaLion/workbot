@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.bot.telegrambot.enums.RegistrationStage;
+import ru.bot.telegrambot.enums.UserState;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.Session;
@@ -36,6 +37,7 @@ public class ContinueRegistrationProcessor implements Processor {
         if (length > 0) {
             RegistrationStage registrationStage = missed[0];
             session.setRegistrationStage(registrationStage);
+            session.setState(UserState.registration);
             RegistrationStage[] newArray = null;
             if (length > 1) {
                 newArray = Arrays.copyOfRange(missed, 1, length);
@@ -52,6 +54,6 @@ public class ContinueRegistrationProcessor implements Processor {
 
     @Override
     public String command() {
-        return "/continue";
+        return "Продолжить ргеистрацию";
     }
 }
