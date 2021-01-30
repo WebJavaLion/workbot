@@ -29,11 +29,6 @@ public class ProcessorExtractor {
 
     private final Map<String, Processor> processorMap;
 
-    @PostConstruct
-    void init() {
-        System.out.println(444);
-    }
-
     public ProcessorExtractor(@Autowired List<Processor> processors) {
         processorMap = ImmutableMap
                 .copyOf(processors.stream()
@@ -51,7 +46,8 @@ public class ProcessorExtractor {
             Session session = extendedUserInfo.getSession();
             UserState state = session.getState();
 
-            if (UserState.registration.equals(state) && !"/stop".equals(messageInfo.getText())) {
+            if (UserState.registration.equals(state) &&
+                    !"/stop".equals(messageInfo.getText()) && !"/skip".equals(messageInfo.getText())) {
                 RegistrationStage registrationStage = session.getRegistrationStage();
                 processorOptional = Optional.ofNullable(registrationProcessorMap.get(registrationStage));
             } else {
