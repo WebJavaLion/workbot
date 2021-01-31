@@ -132,7 +132,7 @@ public class RegistrationFlowPostProcessor implements BeanPostProcessor, Applica
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
         if (registrationStageMapBeans.containsKey(beanName) || registrationStageMapClients.containsKey(beanName)) {
-            if (AopUtils.isAopProxy(bean)) {
+            if (AopUtils.isAopProxy(bean) && registrationStageMapBeans.containsKey(beanName)) {
                 registrationStageMapBeans.get(beanName).setValue(bean);
             }
             if (registrationStageMapBeans.containsKey(beanName)) {
