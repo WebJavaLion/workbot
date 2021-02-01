@@ -1,6 +1,7 @@
 package ru.bot.telegrambot.processor;
 
 import com.google.common.collect.HashBiMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.bot.telegrambot.enums.RegistrationStage;
@@ -22,13 +23,16 @@ import java.util.function.Consumer;
 @Component
 public class SkipStageProcessor implements Processor {
 
-    public Map<Integer, RegistrationStage> stages;
-
+    private final Map<Integer, RegistrationStage> stages;
     private final UserInfoRepository repository;
     private final Consumer<SendMessage> sender;
-    public SkipStageProcessor(UserInfoRepository repository, Consumer<SendMessage> sender) {
+
+    public SkipStageProcessor(UserInfoRepository repository,
+                              Consumer<SendMessage> sender,
+                              Map<Integer, RegistrationStage> stages) {
         this.repository = repository;
         this.sender = sender;
+        this.stages = stages;
     }
 
     @Override
@@ -36,9 +40,13 @@ public class SkipStageProcessor implements Processor {
         Session session = message.getExtendedUserInfo().getSession();
         RegistrationStage registrationStage = session.getRegistrationStage();
         RegistrationStage[] missed = session.getMissed();
-        RegistrationStage[] newMissedArray = Arrays.copyOf(missed, missed.length + 1);
-
-        newMissedArray[newMissedArray.length - 1] = registrationStage;
+        RegistrationStage[] newMissedArray;
+        if (missed != null) {
+            newMissedArray = Arrays.copyOf(missed, missed.length + 1);
+            newMissedArray[newMissedArray.length - 1] = registrationStage;
+        } else {
+            newMissedArray= new RegistrationStage[] { registrationStage };
+        }
         session.setMissed(newMissedArray);
         //убрать в постконстракт, после того, как будет переписан постпроцессор, сейчас после инит метода мапа может быть пустой
         Integer order = HashBiMap.create(stages)

@@ -23,8 +23,10 @@ public final class MessageUtil {
                     Введите минимальный желаемый уровень зарплаты в рублях. 
                     Например: 100 тысяч, 100000, 100к
                     """;
-
-            default -> throw new IllegalStateException("Unexpected value: " + stage);
+            case key_words_choice -> """
+                    Введите ключевые слова по которым для Вас будут подбираться вакансии.
+                    Например: java, spring, kotlin, php, javascript
+                    """;
         };
     }
 }
