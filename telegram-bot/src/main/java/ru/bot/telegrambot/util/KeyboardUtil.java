@@ -34,7 +34,7 @@ public final class KeyboardUtil {
     public static ReplyKeyboardMarkup getDefaultKeyboardWithContinueButton() {
         ReplyKeyboardMarkup defaultKeyboard = getDefaultKeyboard();
         List<KeyboardRow> keyboard = defaultKeyboard.getKeyboard();
-        keyboard.get(0).add(new KeyboardButton("Продолжить ргеистрацию"));
+        keyboard.get(0).add(new KeyboardButton("Продолжить регистрацию"));
         return defaultKeyboard;
     }
 

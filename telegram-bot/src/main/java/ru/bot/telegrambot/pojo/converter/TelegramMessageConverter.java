@@ -14,7 +14,11 @@ public class TelegramMessageConverter implements Converter<SendMessage, Extended
     @Override
     public SendMessage convert(ExtendedMessageInfo ob) {
         SendMessage sm = new SendMessage();
-        sm.setChatId(ob.getExtendedUserInfo().getUserInfo().getTelegramId().toString());
+        sm.setChatId(ob.getExtendedUserInfo()
+                .getUserInfo()
+                .getTelegramId()
+                .toString()
+        );
         sm.setText(ob.getWrappedMessage().getText());
         return sm;
     }

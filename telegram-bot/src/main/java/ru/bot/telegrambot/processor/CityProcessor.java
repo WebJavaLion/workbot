@@ -1,5 +1,6 @@
 package ru.bot.telegrambot.processor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,6 +15,8 @@ import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
+import ru.bot.telegrambot.util.KeyboardUtil;
+import ru.bot.telegrambot.util.MessageUtil;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -30,9 +33,12 @@ public class CityProcessor implements Processor {
     private final UserInfoRepository repository;
     private final Consumer<SendMessage> sender;
 
-    public CityProcessor(UserInfoRepository repository, Consumer<SendMessage> sender) {
+    private final StageSupplier stageSupplier;
+
+    public CityProcessor(UserInfoRepository repository, Consumer<SendMessage> sender, StageSupplier stageSupplier) {
         this.repository = repository;
         this.sender = sender;
+        this.stageSupplier = stageSupplier;
     }
 
     @Override
@@ -40,28 +46,31 @@ public class CityProcessor implements Processor {
         UserInfo userInfo = message.getExtendedUserInfo().getUserInfo();
         Session session = message.getExtendedUserInfo().getSession();
         userInfo.setCity(message.getText());
-        session.setState(UserState.default_);
-        session.setIsFullyRegistered(true);
-        session.setRegistrationStage(null);
 
+        RegistrationStage nextStage =
+                stageSupplier.getNextStageForClassConsideringMissedStages(
+                        CityProcessor.class,
+                        message.getExtendedUserInfo()
+                );
+
+        session.setRegistrationStage(nextStage);
+
+        SendMessage sm = new SendMessage();
+        sm.setChatId(message.getChatId().toString());
+        sm.setText(MessageUtil.getMessageForStage(nextStage));
+        if (nextStage == null && (session.getMissed() == null || session.getMissed().length == 0)) {
+            modifyMessageAndSessionForFullyRegistered(session, sm);
+        } else {
+            sm.setText(
+                    "Чтобы продолжить регистрацию, " +
+                    "нажмите соответствующую кнопку"
+            );
+            sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithContinueButton());
+        }
+        session.setState(UserState.default_);
         repository.update(userInfo);
         repository.update(session);
-
-        sender.accept(SendMessage.builder()
-                .text("Спасибо за регистрацию!")
-                .chatId(message.getChatId().toString())
-                .replyMarkup(getKeyboard())
-                .build());
-    }
-
-    private ReplyKeyboard getKeyboard() {
-        ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
-        keyboard.setResizeKeyboard(true);
-        KeyboardButton button = new KeyboardButton("вакансии");
-        KeyboardRow row = new KeyboardRow();
-        row.add(button);
-        keyboard.setKeyboard(List.of(row));
-        return keyboard;
+        sender.accept(sm);
     }
 
     @Override

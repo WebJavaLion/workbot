@@ -59,7 +59,7 @@ public class StartProcessor implements Processor{
                 .text(this.text)
                 .replyMarkup(getKeyboard())
                 .chatId(message.getChatId().toString())
-                .build());
+                .build()); 
     }
 
     @Override

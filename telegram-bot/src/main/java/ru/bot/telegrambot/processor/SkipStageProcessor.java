@@ -26,13 +26,15 @@ public class SkipStageProcessor implements Processor {
     private final Map<Integer, RegistrationStage> stages;
     private final UserInfoRepository repository;
     private final Consumer<SendMessage> sender;
+    private final StageSupplier stageSupplier;
 
     public SkipStageProcessor(UserInfoRepository repository,
                               Consumer<SendMessage> sender,
-                              Map<Integer, RegistrationStage> stages) {
+                              Map<Integer, RegistrationStage> stages, StageSupplier stageSupplier) {
         this.repository = repository;
         this.sender = sender;
         this.stages = stages;
+        this.stageSupplier = stageSupplier;
     }
 
     @Override
@@ -42,17 +44,25 @@ public class SkipStageProcessor implements Processor {
         RegistrationStage[] missed = session.getMissed();
         RegistrationStage[] newMissedArray;
         if (missed != null) {
-            newMissedArray = Arrays.copyOf(missed, missed.length + 1);
-            newMissedArray[newMissedArray.length - 1] = registrationStage;
+            if (!Arrays.asList(missed).contains(registrationStage)) {
+                newMissedArray = Arrays.copyOf(missed, missed.length + 1);
+                newMissedArray[newMissedArray.length - 1] = registrationStage;
+            } else {
+                System.out.println(registrationStage);
+                System.out.println(Arrays.toString(missed));
+                newMissedArray = new RegistrationStage[missed.length];
+                System.arraycopy(missed, 1, newMissedArray, 0, missed.length - 1);
+                newMissedArray[newMissedArray.length - 1] = registrationStage;
+                System.out.println();
+                System.out.println(Arrays.toString(newMissedArray));
+            }
         } else {
-            newMissedArray= new RegistrationStage[] { registrationStage };
+            newMissedArray = new RegistrationStage[] { registrationStage };
         }
+
         session.setMissed(newMissedArray);
-        //убрать в постконстракт, после того, как будет переписан постпроцессор, сейчас после инит метода мапа может быть пустой
-        Integer order = HashBiMap.create(stages)
-                .inverse()
-                .get(registrationStage);
-        RegistrationStage nextStage = stages.get(order + 1);
+        RegistrationStage nextStage = stageSupplier.getNextStageByUInfo(message.getExtendedUserInfo());
+
         session.setRegistrationStage(nextStage);
 
         SendMessage sm = new SendMessage();

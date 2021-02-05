@@ -6,11 +6,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.bot.telegrambot.context.RegistrationFlow;
 import ru.bot.telegrambot.enums.RegistrationStage;
+import ru.bot.telegrambot.enums.UserState;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.pojo.ExtendedUserInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.Session;
 import ru.bot.telegrambot.tables.pojos.UserInfo;
+import ru.bot.telegrambot.util.KeyboardUtil;
 import ru.bot.telegrambot.util.MessageUtil;
 
 import javax.annotation.PostConstruct;
@@ -50,17 +52,27 @@ public class ExperienceProcessor implements Processor {
                             ExperienceProcessor.class,
                             message.getExtendedUserInfo()
                     );
-
             ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();
             Session session = extendedUserInfo.getSession();
             session.setRegistrationStage(nextStageForClass);
             UserInfo userInfo = extendedUserInfo.getUserInfo();
             userInfo.setExperience(convert);
+
+            SendMessage sm = new SendMessage(
+                    message.getChatId().toString(),
+                    MessageUtil.getMessageForStage(nextStageForClass)
+            );
+            if (nextStageForClass == null && (session.getMissed() == null || session.getMissed().length == 0)) {
+                modifyMessageAndSessionForFullyRegistered(session, sm);
+            } else if (nextStageForClass == null) {
+                session.setState(UserState.default_);
+                sm.setText("чтобы продолжить, нажмите кнопку");
+                sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithContinueButton());
+            }
             repository.update(userInfo);
             repository.update(session);
-            sender.accept(new SendMessage(message.getChatId().toString(),
-                    MessageUtil.getMessageForStage(nextStageForClass))
-            );
+
+            sender.accept(sm);
         } else {
             sender.accept(new SendMessage(message.getChatId().toString(),
                     "Введите в правильном формате"));

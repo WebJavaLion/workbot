@@ -11,4 +11,6 @@ public interface StageSupplier {
 
     RegistrationStage getNextStageForClass(Class<?> cl);
     RegistrationStage getNextStageForClassConsideringMissedStages(Class<?> cl, ExtendedUserInfo userInfo);
+
+    RegistrationStage getNextStageByUInfo(ExtendedUserInfo userInfo);
 }

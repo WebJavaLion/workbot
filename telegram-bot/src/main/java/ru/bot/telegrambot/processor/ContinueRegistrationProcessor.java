@@ -54,6 +54,6 @@ public class ContinueRegistrationProcessor implements Processor {
 
     @Override
     public String command() {
-        return "Продолжить ргеистрацию";
+        return "Продолжить регистрацию";
     }
 }

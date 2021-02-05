@@ -11,6 +11,9 @@ public final class MessageUtil {
     private MessageUtil() {}
 
     public static String getMessageForStage(RegistrationStage stage) {
+        if (stage == null) {
+            return "Спасибо за регистрацию";
+        }
         return switch (stage) {
             case city_choice -> "Напишите город, в котором вы проживаете";
 
