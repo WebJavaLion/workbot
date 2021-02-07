@@ -25,30 +25,17 @@ import java.util.stream.Collectors;
 @Component
 @Transactional
 @RegistrationFlow(order = 1, stage = RegistrationStage.key_words_choice)
-public class KeyWordsProcessor implements Processor {
-
-    private final StageSupplier stageSupplier;
-    private final UserInfoRepository repository;
-    private final Consumer<SendMessage> sender;
+public class KeyWordsProcessor extends AbstractRegistrationProcessor {
 
     public KeyWordsProcessor(StageSupplier stageSupplier, UserInfoRepository repository, Consumer<SendMessage> sender) {
-        this.stageSupplier = stageSupplier;
-        this.repository = repository;
-        this.sender = sender;
+        super(repository, sender, stageSupplier);
     }
 
+
     @Override
-    public void process(ExtendedMessageInfo message) {
+    protected void processMessage(ExtendedMessageInfo message) {
         List<String> words = parseWords(message.getText());
-        Session session = message.getExtendedUserInfo().getSession();
 
-        RegistrationStage nextStageForClass = stageSupplier
-                .getNextStageForClassConsideringMissedStages(
-                        KeyWordsProcessor.class,
-                        message.getExtendedUserInfo()
-                );
-
-        session.setRegistrationStage(nextStageForClass);
         repository.save(words.stream()
                 .map(word -> new KeyWord(message
                         .getExtendedUserInfo()
@@ -57,20 +44,6 @@ public class KeyWordsProcessor implements Processor {
                 )
                 .collect(Collectors.toList()));
 
-        SendMessage sm = new SendMessage(
-                message.getChatId().toString(),
-                MessageUtil.getMessageForStage(nextStageForClass)
-        );
-        if (nextStageForClass == null && (session.getMissed() == null || session.getMissed().length == 0)) {
-            modifyMessageAndSessionForFullyRegistered(session, sm);
-        } else if (nextStageForClass == null) {
-            session.setState(UserState.default_);
-            sm.setText("чтобы продолжить, нажмите кнопку");
-            sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithContinueButton());
-        }
-        repository.update(session);
-
-        sender.accept(sm);
     }
 
     @Override

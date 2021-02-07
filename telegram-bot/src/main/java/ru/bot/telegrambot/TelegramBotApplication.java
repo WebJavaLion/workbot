@@ -10,6 +10,9 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.bot.telegrambot.configuration.BotProperties;
 import ru.bot.telegrambot.service.BotService;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Lshilov
  */

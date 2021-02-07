@@ -28,53 +28,33 @@ import java.util.function.Consumer;
 @Log4j2
 @Transactional
 @RegistrationFlow(order = 3, stage = RegistrationStage.min_salary_choice)
-public class SalaryProcessor implements Processor {
+public class SalaryProcessor extends AbstractRegistrationProcessor {
 
-    private final StageSupplier stageSupplier;
-    private final UserInfoRepository repository;
-    private final Consumer<SendMessage> sender;
-
-    public SalaryProcessor(StageSupplier stageSupplier, UserInfoRepository repository, Consumer<SendMessage> sender) {
-        this.stageSupplier = stageSupplier;
-        this.repository = repository;
-        this.sender = sender;
+    public SalaryProcessor(StageSupplier stageSupplier,
+                           UserInfoRepository repository,
+                           Consumer<SendMessage> sender) {
+        super(repository, sender, stageSupplier);
     }
 
     @Override
     public void process(ExtendedMessageInfo message) {
-        RegistrationStage stage = stageSupplier
-                .getNextStageForClassConsideringMissedStages(
-                        SalaryProcessor.class,
-                        message.getExtendedUserInfo()
-                );
-
         Integer salary = parseTextToSalary(message.getText());
         if (salary != null) {
-            ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();
-            UserInfo userInfo = extendedUserInfo.getUserInfo();
-            userInfo.setMinSalary(salary);
-            Session session = extendedUserInfo.getSession();
-            session.setRegistrationStage(stage);
-
-            SendMessage sm = new SendMessage(
-                    message.getChatId().toString(),
-                    MessageUtil.getMessageForStage(stage)
-            );
-            if (stage == null && (session.getMissed() == null || session.getMissed().length == 0)) {
-                modifyMessageAndSessionForFullyRegistered(session, sm);
-            } else if (stage == null) {
-                session.setState(UserState.default_);
-                sm.setText("чтобы продолжить, нажмите кнопку");
-                sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithContinueButton());
-            }
-            repository.update(userInfo);
-            repository.update(session);
-
-            sender.accept(sm);
+            super.process(message);
         } else {
             sender.accept(new SendMessage(message.getChatId().toString(),
                     "Бот не смог определить вашу желаемую зарплату, попробуйте ввести по-другому"));
         }
+    }
+
+    @Override
+    protected void processMessage(ExtendedMessageInfo message) {
+        Integer salary = parseTextToSalary(message.getText());
+        ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();
+        UserInfo userInfo = extendedUserInfo.getUserInfo();
+        userInfo.setMinSalary(salary);
+
+        repository.update(userInfo);
     }
 
     private Integer parseTextToSalary(String text) {

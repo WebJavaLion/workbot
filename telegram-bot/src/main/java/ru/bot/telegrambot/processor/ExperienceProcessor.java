@@ -28,18 +28,12 @@ import java.util.function.Consumer;
 @Component
 @Transactional
 @RegistrationFlow(order = 2, stage = RegistrationStage.experience_choice)
-public class ExperienceProcessor implements Processor {
-
-    private final UserInfoRepository repository;
-    private final StageSupplier stageSupplier;
-    private final Consumer<SendMessage> sender;
+public class ExperienceProcessor extends AbstractRegistrationProcessor {
 
     public ExperienceProcessor(UserInfoRepository repository,
                                StageSupplier stageSupplier,
                                Consumer<SendMessage> sender) {
-        this.repository = repository;
-        this.stageSupplier = stageSupplier;
-        this.sender = sender;
+        super(repository, sender, stageSupplier);
     }
 
     @Override
@@ -47,36 +41,23 @@ public class ExperienceProcessor implements Processor {
         String s = message.getText().toLowerCase().trim();
         String convert = convert(s);
         if (!"".equals(convert)) {
-            RegistrationStage nextStageForClass = stageSupplier
-                    .getNextStageForClassConsideringMissedStages(
-                            ExperienceProcessor.class,
-                            message.getExtendedUserInfo()
-                    );
-            ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();
-            Session session = extendedUserInfo.getSession();
-            session.setRegistrationStage(nextStageForClass);
-            UserInfo userInfo = extendedUserInfo.getUserInfo();
-            userInfo.setExperience(convert);
-
-            SendMessage sm = new SendMessage(
-                    message.getChatId().toString(),
-                    MessageUtil.getMessageForStage(nextStageForClass)
-            );
-            if (nextStageForClass == null && (session.getMissed() == null || session.getMissed().length == 0)) {
-                modifyMessageAndSessionForFullyRegistered(session, sm);
-            } else if (nextStageForClass == null) {
-                session.setState(UserState.default_);
-                sm.setText("чтобы продолжить, нажмите кнопку");
-                sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithContinueButton());
-            }
-            repository.update(userInfo);
-            repository.update(session);
-
-            sender.accept(sm);
+            super.process(message);
         } else {
             sender.accept(new SendMessage(message.getChatId().toString(),
                     "Введите в правильном формате"));
         }
+    }
+
+    @Override
+    protected void processMessage(ExtendedMessageInfo message) {
+        String s = message.getText().toLowerCase().trim();
+        String convert = convert(s);
+
+        ExtendedUserInfo extendedUserInfo = message.getExtendedUserInfo();
+        UserInfo userInfo = extendedUserInfo.getUserInfo();
+        userInfo.setExperience(convert);
+
+        repository.update(userInfo);
     }
 
     String convert(String text) {
