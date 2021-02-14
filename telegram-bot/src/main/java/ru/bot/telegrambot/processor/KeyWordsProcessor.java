@@ -27,7 +27,9 @@ import java.util.stream.Collectors;
 @RegistrationFlow(order = 1, stage = RegistrationStage.key_words_choice)
 public class KeyWordsProcessor extends AbstractRegistrationProcessor {
 
-    public KeyWordsProcessor(StageSupplier stageSupplier, UserInfoRepository repository, Consumer<SendMessage> sender) {
+    public KeyWordsProcessor(StageSupplier stageSupplier,
+                             UserInfoRepository repository,
+                             Consumer<SendMessage> sender) {
         super(repository, sender, stageSupplier);
     }
 
@@ -43,7 +45,6 @@ public class KeyWordsProcessor extends AbstractRegistrationProcessor {
                         .getId(), word)
                 )
                 .collect(Collectors.toList()));
-
     }
 
     @Override

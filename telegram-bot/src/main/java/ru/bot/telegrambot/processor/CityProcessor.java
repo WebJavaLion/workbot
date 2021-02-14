@@ -25,7 +25,6 @@ public class CityProcessor extends AbstractRegistrationProcessor {
                          Consumer<SendMessage> sender,
                          StageSupplier stageSupplier) {
         super(repository, sender, stageSupplier);
-
     }
 
     @Override

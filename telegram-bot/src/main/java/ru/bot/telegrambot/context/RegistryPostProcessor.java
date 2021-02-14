@@ -2,6 +2,7 @@ package ru.bot.telegrambot.context;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.log4j.Log4j2;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -30,7 +31,7 @@ import java.util.Map;
 @Component
 @Log4j2
 public class RegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
-
+    
     private final ImmutableMap.Builder<Integer, RegistrationStage> builder = ImmutableMap.builder();
 
     @Override

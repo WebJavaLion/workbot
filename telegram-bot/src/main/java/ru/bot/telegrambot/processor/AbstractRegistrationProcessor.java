@@ -47,10 +47,10 @@ public abstract class AbstractRegistrationProcessor implements Processor {
                 );
         Session session = message.getExtendedUserInfo()
                 .getSession();
-
         session.setRegistrationStage(nextStageForClass);
 
-        if (nextStageForClass == null && (session.getMissed() == null || session.getMissed().length == 0)) {
+        if (nextStageForClass == null &&
+                (session.getMissed() == null || session.getMissed().length == 0)) {
             session.setIsFullyRegistered(true);
             session.setState(UserState.default_);
         } else if (nextStageForClass == null) {
@@ -69,7 +69,8 @@ public abstract class AbstractRegistrationProcessor implements Processor {
                 MessageUtil.getMessageForStage(session
                         .getRegistrationStage())
         );
-        if (session.getRegistrationStage() == null && (session.getMissed() == null || session.getMissed().length == 0)) {
+        if (session.getRegistrationStage() == null
+                && (session.getMissed() == null || session.getMissed().length == 0)) {
             sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboard());
         } else if (session.getRegistrationStage() == null) {
             sm.setText("Чтобы пародолжить регистрацию, нажмите соответствующую кнопку!");

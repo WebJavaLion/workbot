@@ -5,7 +5,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>liquick</module>
+        <module>liquiq</module>
         <module>telegram-bot</module>
     </modules>
 
@@ -29,7 +29,7 @@
             <id>migration</id>
             <modules>
                 <module>
-                    liquick
+                    liquiq
                 </module>
             </modules>
         </profile>

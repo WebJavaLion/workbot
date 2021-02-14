@@ -46,20 +46,14 @@ public class SkipStageProcessor implements Processor {
         if (missed != null) {
             if (!Arrays.asList(missed).contains(registrationStage)) {
                 newMissedArray = Arrays.copyOf(missed, missed.length + 1);
-                newMissedArray[newMissedArray.length - 1] = registrationStage;
             } else {
-                System.out.println(registrationStage);
-                System.out.println(Arrays.toString(missed));
                 newMissedArray = new RegistrationStage[missed.length];
                 System.arraycopy(missed, 1, newMissedArray, 0, missed.length - 1);
-                newMissedArray[newMissedArray.length - 1] = registrationStage;
-                System.out.println();
-                System.out.println(Arrays.toString(newMissedArray));
             }
+            newMissedArray[newMissedArray.length - 1] = registrationStage;
         } else {
             newMissedArray = new RegistrationStage[] { registrationStage };
         }
-
         session.setMissed(newMissedArray);
         RegistrationStage nextStage = stageSupplier.getNextStageByUInfo(message.getExtendedUserInfo());
 
