@@ -7,8 +7,6 @@ script:
   - ./mvnw -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80 -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
 before_script:
   - "sudo cat /etc/docker/daemon.json | jq '. + {\"insecure-registries\": [\"185.22.152.167:5000\"]}' | sudo tee /etc/docker/daemon.json"
-before_install:
-  - in deploy_rsa.enc -out $TRAVIS_BUILD_DIR/deploy_rsa -d
 after_success:
   - eval "$(ssh-agent -s)"
   - chmod 600 $TRAVIS_BUILD_DIR/deploy_rsa
