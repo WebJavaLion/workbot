@@ -3,8 +3,6 @@ jdk:
   - openjdk15
 services:
   - docker
-script:
-  - ./mvnw -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80 -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
 before_script:
   - "sudo cat /etc/docker/daemon.json | jq '. + {\"insecure-registries\": [\"185.22.152.167:5000\"]}' | sudo tee /etc/docker/daemon.json"
 after_success:
@@ -18,3 +16,7 @@ after_success:
   - ssh root@185.22.152.167 docker rm tg-bot
   - ssh root@185.22.152.167 docker pull 185.22.152.167:5000/bot-image
   - ssh root@185.22.152.167 docker run -d --name tg-bot -p 185.22.152.167:5000/bot-image
+deploy:
+  provider: script
+  script: "./mvnw -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80 -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen"
+  skip_cleanup: true
