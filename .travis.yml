@@ -19,7 +19,7 @@ after_success:
 - ssh root@185.22.152.167 docker stop tg-bot
 - ssh root@185.22.152.167 docker rm tg-bot
 - ssh root@185.22.152.167 docker pull 185.22.152.167:5000/bot-image
-- ssh root@185.22.152.167 docker run -d --name tg-bot -p 185.22.152.167:5000/bot-image
+- ssh root@185.22.152.167 docker run -d --name tg-bot 185.22.152.167:5000/bot-image
 script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80
   -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
 before_install:
