@@ -25,11 +25,10 @@ after_success:
 
 script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80
   -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
-
+before_script:
+  - sudo service docker restart
 before_install:
-  - sudo systemctl stop docker
   - 'echo {"insecure-registries" : ["185.22.152.167:5000"]} | tee daemon.json'
   - sudo cp daemon.json /etc/docker/
-  - sudo systemctl start docker
   - openssl aes-256-cbc -K $encrypted_db2095f63ba3_key -iv $encrypted_db2095f63ba3_iv
     -in deploy_rsa.enc -out deploy_rsa -d
