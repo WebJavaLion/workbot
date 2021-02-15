@@ -26,7 +26,7 @@ after_success:
 script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80
   -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
 before_script:
-  - "sudo cat /etc/docker/daemon.json | jq '. + {\"insecure-registries\": [\"172.30.0.0:5000\"]}' | sudo tee /etc/docker/daemon.json"
+  - "sudo cat /etc/docker/daemon.json | jq '. + {\"insecure-registries\": [\"185.22.152.167:5000\"]}' | sudo tee /etc/docker/daemon.json"
   - sudo ls -al /etc/docker
   - sudo service docker restart
 before_install:
