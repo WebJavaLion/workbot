@@ -1,15 +1,16 @@
 language: java
+
 jdk:
   - openjdk15
+
 services:
   - docker
+
 install: true
-before_script:
-  - sed -i "s/\DOCKER_OPTS=\"/DOCKER_OPTS=\"--insecure-registry=185.22.152.167\/12 /g" /etc/default/docker
-  - cat /etc/default/docker
-  - service docker restart
+
 addons:
   ssh_known_hosts: 185.22.152.167
+
 after_success:
   - eval "$(ssh-agent -s)"
   - chmod 600 $TRAVIS_BUILD_DIR/deploy_rsa
@@ -21,8 +22,13 @@ after_success:
   - ssh root@185.22.152.167 docker rm tg-bot
   - ssh root@185.22.152.167 docker pull 185.22.152.167:5000/bot-image
   - ssh root@185.22.152.167 docker run -d --name tg-bot 185.22.152.167:5000/bot-image
+
 script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80
   -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
+
 before_install:
+  - sed -i "s/\DOCKER_OPTS=\"/DOCKER_OPTS=\"--insecure-registry=185.22.152.167\/12 /g" /etc/default/docker
+  - cat /etc/default/docker
+  - service docker restart
   - openssl aes-256-cbc -K $encrypted_db2095f63ba3_key -iv $encrypted_db2095f63ba3_iv
     -in deploy_rsa.enc -out deploy_rsa -d
