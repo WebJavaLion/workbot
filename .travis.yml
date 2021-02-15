@@ -28,7 +28,7 @@ script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -
 
 before_install:
   - sudo cat <<EOF > /etc/docker/deamon.json
-      {"insecure-registries": ["185.22.152.167:5000"] }
+      {"insecure-registries": [\"185.22.152.167:5000\"] }
       EOF
   - sudo cat /etc/docker/deamon.json
   - sudo service docker restart
