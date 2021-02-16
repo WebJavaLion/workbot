@@ -9,6 +9,7 @@ import ru.bot.telegrambot.enums.UserState;
 import ru.bot.telegrambot.pojo.ExtendedMessageInfo;
 import ru.bot.telegrambot.repository.UserInfoRepository;
 import ru.bot.telegrambot.tables.pojos.Session;
+import ru.bot.telegrambot.util.KeyboardUtil;
 import ru.bot.telegrambot.util.MessageUtil;
 
 import java.util.Arrays;
@@ -45,6 +46,14 @@ public class ContinueRegistrationProcessor implements Processor {
             session.setMissed(newArray);
             repository.update(session);
 
+            SendMessage sm = new SendMessage();
+            sm.setChatId(message.getChatId().toString());
+            sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithCancelButton());
+            sm.setText(
+                    "Чтобы приостановить регистрацию нажмите \"/stop\", " +
+                    "чтобы пропустить шаг регистрации нажмите \"/skip\""
+            );
+            sender.accept(sm);
             sender.accept(new SendMessage(
                     message.getChatId().toString(),
                     MessageUtil.getMessageForStage(registrationStage)
