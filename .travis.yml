@@ -15,21 +15,18 @@ after_success:
   - eval "$(ssh-agent -s)"
   - chmod 600 $TRAVIS_BUILD_DIR/deploy_rsa
   - ssh-add $TRAVIS_BUILD_DIR/deploy_rsa
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD http://185.22.152.167:5000
-  - docker build -t 185.22.152.167:5000/bot-image:latest telegram-bot/.
-  - docker push 185.22.152.167:5000/bot-image:latest
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - docker build -t webjavalion/tgbot:latest telegram-bot/.
+  - docker push webjavalion/tgbot:latest
+  - ssh root@185.22.152.167 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - ssh root@185.22.152.167 docker stop tg-bot
   - ssh root@185.22.152.167 docker rm tg-bot
-  - ssh root@185.22.152.167 docker pull 185.22.152.167:5000/bot-image
-  - ssh root@185.22.152.167 docker run -d --name tg-bot 185.22.152.167:5000/bot-image
+  - ssh root@185.22.152.167 docker pull webjavalion/tgbot:latest
+  - ssh root@185.22.152.167 docker run -e $BOT_APP_ENVIROMENT -d --name tg-bot webjavalion/tgbot:latest
 
 script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80
   -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
-before_script:
-  - "sudo cat /etc/docker/daemon.json | jq '. + {\"insecure-registries\": [\"185.22.152.167:5000\"]}' | sudo tee /etc/docker/daemon.json"
-  - sudo cat /etc/docker/daemon.json
-  - sudo ls -al /etc/docker
-  - sudo service docker restart
+
 before_install:
   - openssl aes-256-cbc -K $encrypted_db2095f63ba3_key -iv $encrypted_db2095f63ba3_iv
     -in deploy_rsa.enc -out deploy_rsa -d

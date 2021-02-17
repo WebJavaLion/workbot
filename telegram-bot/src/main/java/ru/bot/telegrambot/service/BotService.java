@@ -47,9 +47,10 @@ public class BotService extends TelegramLongPollingBot implements ProcessorExtra
 
     @Override
     public void onUpdateReceived(Update update) {
-        ExtendedMessageInfo convert = converter.convert(update);
-        processorExtractor.getAppropriateProcessor(convert)
-                .ifPresent(processor -> processor.process(convert));
+        SendMessage sm = new SendMessage(update.getMessage().getFrom().getId().toString(), "CI_TEST");
+//       ExtendedMessageInfo convert = converter.convert(update);
+//        processorExtractor.getAppropriateProcessor(convert)
+//             .ifPresent(processor -> processor.process(convert));
     }
 
     @Override

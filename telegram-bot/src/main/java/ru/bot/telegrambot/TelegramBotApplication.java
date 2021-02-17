@@ -19,7 +19,6 @@ import ru.bot.telegrambot.service.BotService;
 public class TelegramBotApplication {
 
     public static void main(String[] args) {
-        System.out.println(1231);
         ConfigurableApplicationContext context = SpringApplication.run(TelegramBotApplication.class, args);
         try {
             TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
