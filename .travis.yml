@@ -22,7 +22,8 @@ after_success:
   - ssh root@185.22.152.167 docker stop tg-bot
   - ssh root@185.22.152.167 docker rm tg-bot
   - ssh root@185.22.152.167 docker pull webjavalion/tgbot:latest
-  - ssh root@185.22.152.167 docker run -e $BOT_APP_ENVIROMENT -d --name tg-bot webjavalion/tgbot:latest
+  - ssh root@185.22.152.167 docker run --env BD_URL=$BD_URL --env BD_USERNAME=$BD_USERNAME --env DRIVER=$DRIVER --env BD_PASSWORD=$BD_PASSWORD
+    --env BOT_USER_NAME=$BOT_USER_NAME --env BOT_TOKEN=$BOT_TOKEN -d --name tg-bot webjavalion/tgbot:latest
 
 script: mvn -pl telegram-bot clean install -DskipTests -Dlogin=lev -Ddb=srabot -Dhost=46.17.47.80
   -Dport=5432 -Dpassword=oU88hY33B75HHnd -P codegen
