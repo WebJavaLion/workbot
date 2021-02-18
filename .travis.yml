@@ -8,6 +8,10 @@ services:
 
 install: true
 
+branches:
+  only:
+    - master
+
 addons:
   ssh_known_hosts: 185.22.152.167
 

@@ -61,7 +61,7 @@ public class SkipStageProcessor implements Processor {
 
         SendMessage sm = new SendMessage();
         sm.setChatId(message.getChatId().toString());
-
+        sm.setReplyMarkup(KeyboardUtil.getInlineKeyboardByStage(nextStage));
         if (nextStage != null) {
             sm.setText(MessageUtil.getMessageForStage(nextStage));
         } else {

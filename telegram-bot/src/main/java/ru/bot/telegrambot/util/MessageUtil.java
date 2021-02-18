@@ -30,7 +30,9 @@ public final class MessageUtil {
                     Введите ключевые слова по которым для Вас будут подбираться вакансии.
                     Например: java, spring, kotlin, php, javascript
                     """;
-            case relocate_choice -> null;
+            case relocate_choice -> """
+                    Вы готовы к переезду в другой город?
+                    """;
         };
     }
 }

@@ -38,7 +38,8 @@ public class DefaultStageResolver implements StageSupplier {
                         key_words_choice, info -> CollectionUtils.isEmpty(info.getKeyWords()),
                         experience_choice, info -> info.getUserInfo().getExperience() == null,
                         min_salary_choice, info -> info.getUserInfo().getMinSalary() == null,
-                        city_choice, info -> info.getUserInfo().getCity() == null
+                        city_choice, info -> info.getUserInfo().getCity() == null,
+                        relocate_choice, info -> info.getUserInfo().getIsReadyToRelocate() == null
                 );
     }
 
@@ -54,7 +55,7 @@ public class DefaultStageResolver implements StageSupplier {
             case experience_choice -> checkInfoPropertyNullMap.get(experience_choice);
             case min_salary_choice -> checkInfoPropertyNullMap.get(min_salary_choice);
             case city_choice -> checkInfoPropertyNullMap.get(city_choice);
-            case relocate_choice -> null;
+            case relocate_choice -> checkInfoPropertyNullMap.get(relocate_choice);
         };
     }
 
