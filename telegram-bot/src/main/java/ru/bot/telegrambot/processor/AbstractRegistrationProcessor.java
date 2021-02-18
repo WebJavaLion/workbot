@@ -69,6 +69,7 @@ public abstract class AbstractRegistrationProcessor implements Processor {
                 MessageUtil.getMessageForStage(session
                         .getRegistrationStage())
         );
+        sm.setReplyMarkup(KeyboardUtil.getInlineKeyboardByStage(session.getRegistrationStage()));
         if (session.getRegistrationStage() == null
                 && (session.getMissed() == null || session.getMissed().length == 0)) {
             sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboard());
@@ -76,7 +77,6 @@ public abstract class AbstractRegistrationProcessor implements Processor {
             sm.setText("Чтобы пародолжить регистрацию, нажмите соответствующую кнопку!");
             sm.setReplyMarkup(KeyboardUtil.getDefaultKeyboardWithContinueButton());
         }
-
         sender.accept(sm);
     }
 }
