@@ -42,7 +42,7 @@ public class ReadyToRelocateProcessor extends AbstractRegistrationProcessor{
     protected void processMessage(ExtendedMessageInfo message) {
         String text = message.getText();
         UserInfo userInfo = message.getExtendedUserInfo().getUserInfo();
-        userInfo.setIsReadyToRelacate(Boolean.parseBoolean(text));
+        userInfo.setIsReadyToRelocate(Boolean.parseBoolean(text));
 
         AnswerCallbackQuery answerCallbackQuery = AnswerCallbackQuery.builder()
                 .callbackQueryId(message.getCallbackQuery().getId())
