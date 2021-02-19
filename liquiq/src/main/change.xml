@@ -176,4 +176,33 @@
             ]]>
         </sql>
     </changeSet>
+    <changeSet id="10" author="padrition">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                <![CDATA[
+                    select count(*)
+                    from information_schema.columns c
+                    where c.table_name = 'user_info'
+                    and c.column_name = 'is_ready_to_relocate';
+                ]]>
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                alter table user_info add column is_ready_to_relocate boolean;
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="11" runInTransaction="false" author="padrition">
+        <preConditions onFail="MARK_RAN">
+            <![CDATA[
+                select count(*) from pg_enum c where c.enumlabel = 'relocate_choice';
+            ]]>
+        </preConditions>
+        <sql>
+            <![CDATA[
+                alter type registration_stage add value 'relocate_choice';
+            ]]>
+        </sql>
+    </changeSet>
 </databaseChangeLog>
