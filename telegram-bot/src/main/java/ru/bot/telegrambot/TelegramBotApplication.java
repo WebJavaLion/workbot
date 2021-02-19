@@ -20,7 +20,6 @@ public class TelegramBotApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(TelegramBotApplication.class, args);
-
         try {
             TelegramBotsApi api = new TelegramBotsApi(DefaultBotSession.class);
             api.registerBot(context.getBean(BotService.class));
