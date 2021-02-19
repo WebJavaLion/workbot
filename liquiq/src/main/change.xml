@@ -195,9 +195,11 @@
     </changeSet>
     <changeSet id="11" runInTransaction="false" author="padrition">
         <preConditions onFail="MARK_RAN">
-            <![CDATA[
+            <sqlCheck expectedResult="0">
+                <![CDATA[
                 select count(*) from pg_enum c where c.enumlabel = 'relocate_choice';
             ]]>
+            </sqlCheck>
         </preConditions>
         <sql>
             <![CDATA[
