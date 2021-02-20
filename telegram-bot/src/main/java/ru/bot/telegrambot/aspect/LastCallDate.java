@@ -22,8 +22,10 @@ public class LastCallDate {
 
     @After("execution(* ru.bot.telegrambot.processor.Processor.process(..)) && args(extendedMessageInfo)")
     public void lastCall(ExtendedMessageInfo extendedMessageInfo) {
-        UserInfo userInfo = extendedMessageInfo.getExtendedUserInfo().getUserInfo();
-        userInfo.setLastVisitDateTime(LocalDateTime.now());
-        repository.update(userInfo);
+        if(extendedMessageInfo.getExtendedUserInfo() != null) {
+            UserInfo userInfo = extendedMessageInfo.getExtendedUserInfo().getUserInfo();
+            userInfo.setLastVisitDateTime(LocalDateTime.now());
+            repository.update(userInfo);
+        }
     }
 }
