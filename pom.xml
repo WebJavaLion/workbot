@@ -5,7 +5,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>liquiq</module>
         <module>telegram-bot</module>
     </modules>
 
@@ -21,15 +20,6 @@
             <modules>
                 <module>
                     telegram-bot
-                </module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>migration</id>
-            <modules>
-                <module>
-                    liquiq
                 </module>
             </modules>
         </profile>
