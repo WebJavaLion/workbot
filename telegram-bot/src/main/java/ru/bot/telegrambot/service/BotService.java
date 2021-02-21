@@ -1,5 +1,7 @@
 package ru.bot.telegrambot.service;
 
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -13,7 +15,6 @@ import ru.bot.telegrambot.processor.ProcessorExtractor;
 /**
  * @author Lshilov
  */
-
 public class BotService extends TelegramLongPollingBot implements ProcessorExtractorAware {
 
     private final BotProperties botProperties;
@@ -46,6 +47,8 @@ public class BotService extends TelegramLongPollingBot implements ProcessorExtra
     }
 
     @Override
+    //@LastCallAspect так не работает (из-за ограничений spring aop, тк этот метод (как я понимаю не вызывается напрямую,
+    // а вызывается в другом методе бота, хз, такая же фигня будет к примеру и с @Transactional на этом методе))
     public void onUpdateReceived(Update update) {
        ExtendedMessageInfo convert = converter.convert(update);
         processorExtractor.getAppropriateProcessor(convert)

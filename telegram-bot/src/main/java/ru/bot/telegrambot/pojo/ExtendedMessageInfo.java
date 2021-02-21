@@ -1,6 +1,8 @@
 package ru.bot.telegrambot.pojo;
 
 import lombok.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 

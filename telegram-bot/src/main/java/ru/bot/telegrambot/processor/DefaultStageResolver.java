@@ -39,7 +39,7 @@ public class DefaultStageResolver implements StageSupplier {
                         experience_choice, info -> info.getUserInfo().getExperience() == null,
                         min_salary_choice, info -> info.getUserInfo().getMinSalary() == null,
                         city_choice, info -> info.getUserInfo().getCity() == null,
-                        relocate_choice, info -> info.getUserInfo().getIsReadyToRelacate() == null
+                        relocate_choice, info -> info.getUserInfo().getIsReadyToRelocate() == null
                 );
     }
 
