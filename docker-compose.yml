@@ -1,0 +1,27 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:11.9-alpine
+    container_name: postgres
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=root
+      - POSTGRES_DB=srabot
+  bot:
+    build:
+      context: telegram-bot
+    container_name: tgbot
+    environment:
+      - BD_URL=-Dapp.jdbcUrl=jdbc:postgresql://postgres:5432/srabot
+      - BD_USERNAME=-Dapp.username=root
+      - BD_PASSWORD=-Dapp.password=root
+      - DRIVER=-Dapp.driver-class-name=org.postgresql.Driver
+      - BOT_USERNAME=-Dbot.botUsername=JobGetterBot
+      - BOT_TOKEN=-Dbot.botToken=1521711107:AAHqSY66XhtfDd0-2d4k7IuPXAA--TginW4
+      - PROFILE=-Dspring.profiles.active=dev
+    depends_on:
+      - postgres
