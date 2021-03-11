@@ -49,6 +49,6 @@ services:
     ports:
       - 3067:3067
     environment:
-      - API_HASH=-Dapi-hash=ded07ae66fb5314abb34b70fe8692fc0
-      - API_ID=-Dapi-id=1376241
+      - API_HASH=-Dapi-hash=-
+      - API_ID=-Dapi-id=-
       - PROFILE=-Dspring.profiles.active=compose
